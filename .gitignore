@@ -1,0 +1,58 @@
+# ==========================================
+# 🛑 Cấu hình của các IDE (Eclipse, IntelliJ, VS Code)
+# ==========================================
+# Eclipse
+.metadata/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~
+.project
+.classpath
+.settings/
+.buildpath
+Servers/
+.recommenders/
+
+# IntelliJ IDEA (Nếu bạn của bạn dùng)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Visual Studio Code (Nếu bạn của bạn dùng)
+.vscode/
+
+# ==========================================
+# 🛑 Build & Package (Maven & Tomcat)
+# ==========================================
+target/
+build/
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+WebContent/WEB-INF/classes/
+
+# Chặn file chứa mật khẩu database thực tế (nếu sau này bạn tách ra)
+# WebContent/WEB-INF/db.properties
+
+# ==========================================
+# 🛑 Hệ điều hành sinh ra (Rác hệ thống)
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# 🛑 File Log
+# ==========================================
+*.log
