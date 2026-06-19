@@ -38,6 +38,7 @@
     <div class="alert alert-success d-flex justify-content-between align-items-center">
       <div>Welcome, <%= user.getName() %>!</div>
       <div>
+       <a href="key_management.jsp" class="btn btn-sm btn-outline-info me-2">🔑 Keys</a>
         <a href="order-history" class="btn btn-sm btn-outline-primary me-2">My Orders</a>
         <a href="logout" class="btn btn-sm btn-danger">Logout</a>
       </div>
