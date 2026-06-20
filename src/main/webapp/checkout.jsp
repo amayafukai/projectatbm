@@ -13,19 +13,22 @@
 </head>
 <body>
 <div class="container mt-5">
-  <h2 class="mb-4">Checkout</h2>
-  <form action="checkout" method="post">
+  <h2 class="mb-4">Checkout - Nhập thông tin</h2>
+  <form action="prepare-order" method="post">
     <div class="mb-3">
-      <label>Name</label>
+      <label>Họ tên</label>
       <input type="text" name="name" class="form-control" required />
     </div>
     <div class="mb-3">
-      <label>Address</label>
+      <label>Địa chỉ giao hàng</label>
       <textarea name="address" class="form-control" required></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Place Order</button>
+    <div class="mb-3">
+      <label>Mã khuyến mãi (nếu có)</label>
+      <input type="text" name="promotion" class="form-control" placeholder="VD: SUMMER10" />
+    </div>
+    <button type="submit" class="btn btn-primary">Preview &amp; Hash order</button>
   </form>
 </div>
 </body>
 </html>
-
