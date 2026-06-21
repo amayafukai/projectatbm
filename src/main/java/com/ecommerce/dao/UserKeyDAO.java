@@ -12,7 +12,7 @@ public class UserKeyDAO {
     public boolean savePublicKey(int userId, String publicKey) {
         String sql = "INSERT INTO user_keys(user_id, public_key, status, created_at) VALUES (?, ?, 'ACTIVE', NOW())";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, publicKey);
             return ps.executeUpdate() > 0;
@@ -26,7 +26,7 @@ public class UserKeyDAO {
     public UserKey getActiveKey(int userId) {
         String sql = "SELECT * FROM user_keys WHERE user_id = ? AND status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -48,7 +48,7 @@ public class UserKeyDAO {
     public boolean revokeAllKeys(int userId) {
         String sql = "UPDATE user_keys SET status = 'REVOKED', revoked_at = NOW() WHERE user_id = ? AND status = 'ACTIVE'";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
             return true;
@@ -57,4 +57,27 @@ public class UserKeyDAO {
             return false;
         }
     }
+
+    public UserKey getKeyById(int keyId) {
+        String sql = "SELECT * FROM user_keys WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, keyId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                UserKey key = new UserKey();
+                key.setId(rs.getInt("id"));
+                key.setUserId(rs.getInt("user_id"));
+                key.setPublicKey(rs.getString("public_key"));
+                key.setStatus(rs.getString("status"));
+                key.setCreatedAt(rs.getTimestamp("created_at"));
+                key.setRevokedAt(rs.getTimestamp("revoked_at")); // cần thêm getter/setter trong UserKey
+                return key;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
