@@ -103,65 +103,65 @@ public class OrderDAO {
 	}
 
 	// Lưu đơn hàng ở trạng thái PENDING (chưa ký) và trả về ID đơn hàng
-	public int createPendingOrder(int userId, List<Product> cart, String promotion, 
-	                              String customerName, String address, String orderHash, int publicKeyId) {
-	    String sql = "INSERT INTO orders (user_id, product_name, quantity, price, promotion, " +
-	                 "customer_name, address, order_hash, public_key_id, verify_status) " +
-	                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')";
-	    int generatedId = -1;
-	    try (Connection conn = DBConnection.getConnection();
-	         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-	        for (Product p : cart) {
-	            ps.setInt(1, userId);
-	            ps.setString(2, p.getName());
-	            ps.setInt(3, 1); // quantity default 1
-	            ps.setDouble(4, p.getPrice());
-	            ps.setString(5, promotion);
-	            ps.setString(6, customerName);
-	            ps.setString(7, address);
-	            ps.setString(8, orderHash);
-	            ps.setInt(9, publicKeyId);
-	            ps.addBatch();
-	        }
-	        int[] results = ps.executeBatch();
-	        ResultSet rs = ps.getGeneratedKeys();
-	        if (rs.next()) {
-	            generatedId = rs.getInt(1);
-	        }
-	        return generatedId;
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return -1;
-	    }
+	public int createPendingOrder(int userId, List<Product> cart, String promotion,
+			String customerName, String address, String orderHash, int publicKeyId) {
+		String sql = "INSERT INTO orders (user_id, product_name, quantity, price, promotion, " +
+				"customer_name, address, order_hash, public_key_id, verify_status) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')";
+		int generatedId = -1;
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			for (Product p : cart) {
+				ps.setInt(1, userId);
+				ps.setString(2, p.getName());
+				ps.setInt(3, 1); // quantity default 1
+				ps.setDouble(4, p.getPrice());
+				ps.setString(5, promotion);
+				ps.setString(6, customerName);
+				ps.setString(7, address);
+				ps.setString(8, orderHash);
+				ps.setInt(9, publicKeyId);
+				ps.addBatch();
+			}
+			int[] results = ps.executeBatch();
+			ResultSet rs = ps.getGeneratedKeys();
+			if (rs.next()) {
+				generatedId = rs.getInt(1);
+			}
+			return generatedId;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	public Order getOrderById(int orderId) {
-	    String sql = "SELECT * FROM orders WHERE id = ?";
-	    try (Connection conn = DBConnection.getConnection();
-	         PreparedStatement ps = conn.prepareStatement(sql)) {
-	        ps.setInt(1, orderId);
-	        ResultSet rs = ps.executeQuery();
-	        if (rs.next()) {
-	            Order o = new Order();
-	            o.setId(rs.getInt("id"));
-	            o.setUserId(rs.getInt("user_id"));
-	            o.setProductName(rs.getString("product_name"));
-	            o.setQuantity(rs.getInt("quantity"));
-	            o.setPrice(rs.getDouble("price"));
-	            o.setPromotion(rs.getString("promotion"));
-	            o.setOrderDate(rs.getTimestamp("order_date"));
-	            o.setOrderHash(rs.getString("order_hash"));
-	            o.setSignature(rs.getString("signature"));
-	            o.setPublicKeyId(rs.getInt("public_key_id")); // Lấy public_key_id
-	            o.setVerifyStatus(rs.getString("verify_status"));
-	            o.setCustomerName(rs.getString("customer_name"));
-	            o.setAddress(rs.getString("address"));
-	            return o;
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	    return null;
+		String sql = "SELECT * FROM orders WHERE id = ?";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, orderId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				Order o = new Order();
+				o.setId(rs.getInt("id"));
+				o.setUserId(rs.getInt("user_id"));
+				o.setProductName(rs.getString("product_name"));
+				o.setQuantity(rs.getInt("quantity"));
+				o.setPrice(rs.getDouble("price"));
+				o.setPromotion(rs.getString("promotion"));
+				o.setOrderDate(rs.getTimestamp("order_date"));
+				o.setOrderHash(rs.getString("order_hash"));
+				o.setSignature(rs.getString("signature"));
+				o.setPublicKeyId(rs.getInt("public_key_id")); // Lấy public_key_id
+				o.setVerifyStatus(rs.getString("verify_status"));
+				o.setCustomerName(rs.getString("customer_name"));
+				o.setAddress(rs.getString("address"));
+				return o;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// Cập nhật chữ ký và trạng thái xác minh

@@ -55,9 +55,9 @@ public class PrepareOrderServlet extends HttpServlet {
         dataBuilder.append("promotion:").append(promotion != null ? promotion : "none").append("|");
         for (Product p : cart) {
             dataBuilder.append("product:")
-                       .append(p.getId()).append(",")
-                       .append(p.getName()).append(",")
-                       .append(p.getPrice()).append("|");
+                    .append(p.getId()).append(",")
+                    .append(p.getName()).append(",")
+                    .append(p.getPrice()).append("|");
         }
         String rawData = dataBuilder.toString();
 
@@ -69,7 +69,8 @@ public class PrepareOrderServlet extends HttpServlet {
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1)
+                    hexString.append('0');
                 hexString.append(hex);
             }
             orderHash = hexString.toString();
@@ -81,7 +82,8 @@ public class PrepareOrderServlet extends HttpServlet {
 
         // Lưu đơn hàng với publicKeyId
         OrderDAO orderDAO = new OrderDAO();
-        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address, orderHash, publicKeyId);
+        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address, orderHash,
+                publicKeyId);
 
         if (orderId == -1) {
             response.getWriter().println("Failed to save order");
