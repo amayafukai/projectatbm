@@ -1,8 +1,10 @@
 package com.ecommerce.servlet;
 
 import com.ecommerce.dao.OrderDAO;
+import com.ecommerce.dao.UserKeyDAO;
 import com.ecommerce.model.Product;
 import com.ecommerce.model.User;
+import com.ecommerce.model.UserKey;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @WebServlet("/prepare-order")
 public class PrepareOrderServlet extends HttpServlet {
@@ -30,37 +31,41 @@ public class PrepareOrderServlet extends HttpServlet {
 
         String customerName = request.getParameter("name");
         String address = request.getParameter("address");
-        String promotion = request.getParameter("promotion"); // có thể null
+        String promotion = request.getParameter("promotion");
 
-        // Lấy giỏ hàng từ session
         List<Product> cart = (List<Product>) session.getAttribute("cart");
         if (cart == null || cart.isEmpty()) {
             response.getWriter().println("Giỏ hàng trống!");
             return;
         }
 
-        // 1. Xây dựng dữ liệu bất biến dạng chuỗi
+        // Lấy public key đang hoạt động
+        UserKeyDAO keyDAO = new UserKeyDAO();
+        UserKey activeKey = keyDAO.getActiveKey(userId);
+        if (activeKey == null) {
+            response.getWriter().println("Bạn chưa có public key. Vui lòng tạo khóa trước.");
+            return;
+        }
+        int publicKeyId = activeKey.getId();
+
+        // Xây dựng dữ liệu bất biến (order_details)
         StringBuilder dataBuilder = new StringBuilder();
-        // Thêm thông tin người mua
         dataBuilder.append("customer:").append(customerName).append("|");
         dataBuilder.append("address:").append(address).append("|");
         dataBuilder.append("promotion:").append(promotion != null ? promotion : "none").append("|");
-        // Thêm danh sách sản phẩm
         for (Product p : cart) {
             dataBuilder.append("product:")
                        .append(p.getId()).append(",")
                        .append(p.getName()).append(",")
                        .append(p.getPrice()).append("|");
         }
-        String rawData = dataBuilder.toString();
-        System.out.println("Raw data to hash: " + rawData);
+        String orderDetails = dataBuilder.toString();
 
-        // 2. Băm SHA-256
+        // Băm SHA-256
         String orderHash = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = md.digest(rawData.getBytes("UTF-8"));
-            // Chuyển thành chuỗi hex
+            byte[] hashBytes = md.digest(orderDetails.getBytes("UTF-8"));
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
@@ -74,20 +79,22 @@ public class PrepareOrderServlet extends HttpServlet {
             return;
         }
 
-        // 3. Lưu đơn hàng tạm (PENDING) vào database
+        // Tạo order_group_id (dùng timestamp hoặc ngẫu nhiên)
+        int orderGroupId = (int) (System.currentTimeMillis() / 1000);
+
+        // Lưu đơn hàng
         OrderDAO orderDAO = new OrderDAO();
-        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address, orderHash);
+        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address,
+                                                  orderHash, publicKeyId, orderDetails, orderGroupId);
 
         if (orderId == -1) {
             response.getWriter().println("Failed to save order");
             return;
         }
 
-        // 4. Lưu orderHash vào session để dùng ở bước ký sau (hoặc có thể lấy lại từ DB)
         session.setAttribute("currentOrderHash", orderHash);
         session.setAttribute("currentOrderId", orderId);
 
-        // 5. Chuyển hướng đến trang hiển thị hash và hướng dẫn ký
         response.sendRedirect("order_preview.jsp");
     }
 }
