@@ -57,4 +57,28 @@ public class UserKeyDAO {
             return false;
         }
     }
+
+    public UserKey getKeyById(int keyId) {
+        String sql = "SELECT * FROM user_keys WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, keyId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                UserKey key = new UserKey();
+                key.setId(rs.getInt("id"));
+                key.setUserId(rs.getInt("user_id"));
+                key.setPublicKey(rs.getString("public_key"));
+                key.setStatus(rs.getString("status"));
+                key.setCreatedAt(rs.getTimestamp("created_at"));
+                key.setRevokedAt(rs.getTimestamp("revoked_at")); // cần thêm getter/setter trong UserKey
+                return key;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    
 }

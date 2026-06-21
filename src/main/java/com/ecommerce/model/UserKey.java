@@ -8,6 +8,15 @@ public class UserKey {
 	private String publicKey;
 	private String status;
 	private Timestamp createdAt;
+	private Timestamp revokedAt;
+	
+	public Timestamp getRevokedAt() {
+		return revokedAt;
+	}
+
+	public void setRevokedAt(Timestamp revokedAt) {
+		this.revokedAt = revokedAt;
+	}
 
 	public int getId() {
 		return id;
