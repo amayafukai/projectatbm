@@ -9,7 +9,9 @@ public class UserKey {
 	private String status;
 	private Timestamp createdAt;
 	private Timestamp revokedAt;
-
+	
+	
+	
 	public Timestamp getRevokedAt() {
 		return revokedAt;
 	}

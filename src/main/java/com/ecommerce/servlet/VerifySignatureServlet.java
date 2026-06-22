@@ -78,8 +78,7 @@ public class VerifySignatureServlet extends HttpServlet {
             Timestamp orderTime = order.getOrderDate();
             if (orderTime != null && orderTime.after(revokedAt)) {
                 // Đơn hàng được tạo sau khi key bị thu hồi -> không hợp lệ
-                request.setAttribute("error",
-                        "❌ Public key đã bị thu hồi trước thời điểm tạo đơn hàng. Đơn hàng không hợp lệ.");
+                request.setAttribute("error", "❌ Public key đã bị thu hồi trước thời điểm tạo đơn hàng. Đơn hàng không hợp lệ.");
                 request.getRequestDispatcher("verify_result.jsp").forward(request, response);
                 return;
             }
@@ -127,7 +126,7 @@ public class VerifySignatureServlet extends HttpServlet {
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
+                                 + Character.digit(s.charAt(i+1), 16));
         }
         return data;
     }
