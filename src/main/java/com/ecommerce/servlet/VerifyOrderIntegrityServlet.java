@@ -55,9 +55,10 @@ public class VerifyOrderIntegrityServlet extends HttpServlet {
 	        ordersInGroup.sort((o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
 	        for (Order o : ordersInGroup) {
 	            dataBuilder.append("product:")
-	                       .append(o.getProductId()).append(",") // dùng product_id
+	                       .append(o.getProductId()).append(",")
 	                       .append(o.getProductName()).append(",")
-	                       .append(o.getPrice()).append("|");
+	                       .append(o.getPrice()).append(",")
+	                       .append(o.getQuantity()).append("|");  
 	        }
 	        String currentData = dataBuilder.toString();
 

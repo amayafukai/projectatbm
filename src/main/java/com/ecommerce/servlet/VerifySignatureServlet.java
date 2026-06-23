@@ -101,7 +101,9 @@ public class VerifySignatureServlet extends HttpServlet {
             boolean verified = sig.verify(signatureBytes);
 
             if (verified) {
-                boolean updated = orderDAO.updateSignatureAndStatus(orderId, signatureBase64.trim(), "VERIFIED");
+            	 // Lấy orderGroupId từ order đã lấy được
+                int groupId = order.getOrderGroupId();
+                boolean updated = orderDAO.updateSignatureAndStatusByGroup(groupId, signatureBase64.trim(), "VERIFIED");
                 if (updated) {
                     session.removeAttribute("currentOrderHash");
                     session.removeAttribute("currentOrderId");

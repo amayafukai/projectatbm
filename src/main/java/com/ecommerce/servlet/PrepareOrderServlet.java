@@ -2,6 +2,7 @@ package com.ecommerce.servlet;
 
 import com.ecommerce.dao.OrderDAO;
 import com.ecommerce.dao.UserKeyDAO;
+import com.ecommerce.model.CartItem;
 import com.ecommerce.model.Product;
 import com.ecommerce.model.User;
 import com.ecommerce.model.UserKey;
@@ -33,7 +34,8 @@ public class PrepareOrderServlet extends HttpServlet {
         String address = request.getParameter("address");
         String promotion = request.getParameter("promotion");
 
-        List<Product> cart = (List<Product>) session.getAttribute("cart");
+        // Lấy giỏ hàng dưới dạng List<CartItem>
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null || cart.isEmpty()) {
             response.getWriter().println("Giỏ hàng trống!");
             return;
@@ -48,16 +50,18 @@ public class PrepareOrderServlet extends HttpServlet {
         }
         int publicKeyId = activeKey.getId();
 
-        // Xây dựng dữ liệu bất biến (order_details)
+        // Xây dựng dữ liệu bất biến (order_details) BAO GỒM CẢ QUANTITY
         StringBuilder dataBuilder = new StringBuilder();
         dataBuilder.append("customer:").append(customerName).append("|");
         dataBuilder.append("address:").append(address).append("|");
         dataBuilder.append("promotion:").append(promotion != null ? promotion : "none").append("|");
-        for (Product p : cart) {
+        for (CartItem item : cart) {
+            Product p = item.getProduct();
             dataBuilder.append("product:")
                        .append(p.getId()).append(",")
                        .append(p.getName()).append(",")
-                       .append(p.getPrice()).append("|");
+                       .append(p.getPrice()).append(",")
+                       .append(item.getQuantity()).append("|");  // ✅ thêm quantity
         }
         String orderDetails = dataBuilder.toString();
 
@@ -79,7 +83,7 @@ public class PrepareOrderServlet extends HttpServlet {
             return;
         }
 
-        // Tạo order_group_id (dùng timestamp hoặc ngẫu nhiên)
+        // Tạo order_group_id
         int orderGroupId = (int) (System.currentTimeMillis() / 1000);
 
         // Lưu đơn hàng
