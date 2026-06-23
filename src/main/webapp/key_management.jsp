@@ -75,6 +75,20 @@
             <br>⚠️ Vui lòng giữ file private key an toàn, không chia sẻ cho người khác.</small>
         </p>
     </div>
+    <hr>
+    <div class="mt-4">
+        <h5>📥 Tải công cụ ký số</h5>
+        <p>
+            Tải về và chạy file <code>SignTool.jar</code> để ký hash đơn hàng bằng private key của bạn.
+        </p>
+        <a href="downloads/SignTool.jar" class="btn btn-success" download>
+            ⬇️ Tải SignTool.jar
+        </a>
+        <p class="text-muted mt-2">
+            <small>Yêu cầu: Java Runtime Environment (JRE) đã cài đặt trên máy.</small>
+        </p>
+    </div>
+    
 </div>
 </body>
 </html>
