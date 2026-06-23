@@ -1,22 +1,20 @@
 package com.ecommerce.servlet;
 
-import jakarta.servlet.*;
+import com.ecommerce.dao.OrderDAO;
+import com.ecommerce.model.Order;
+import com.ecommerce.model.User;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.util.List;
-
-import com.ecommerce.dao.OrderDAO;
-import com.ecommerce.model.Order;
-import com.ecommerce.model.User;
+import java.util.*;
 
 @WebServlet("/order-history")
 public class OrderHistoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check if session exists and user is logged in
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("login.jsp");
@@ -24,23 +22,22 @@ public class OrderHistoryServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        if (user == null) {
-            response.sendRedirect("login.jsp");
-            return;
+        OrderDAO dao = new OrderDAO();
+        List<Order> orders = dao.getOrdersByUserId(user.getId());
+
+        // Nhóm theo order_group_id
+        Map<Integer, List<Order>> groupMap = new LinkedHashMap<>();
+        for (Order o : orders) {
+            int groupId = o.getOrderGroupId();
+            groupMap.computeIfAbsent(groupId, k -> new ArrayList<>()).add(o);
         }
 
-        try {
-            // Fetch user's orders
-            OrderDAO dao = new OrderDAO();
-            List<Order> orders = dao.getOrdersByUserId(user.getId());
+        // Chuyển Map thành List để dễ duyệt
+        List<Map.Entry<Integer, List<Order>>> groupedOrders = new ArrayList<>(groupMap.entrySet());
+        // Sắp xếp theo groupId giảm dần (mới nhất trước)
+        groupedOrders.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-            // Set as attribute for JSP
-            request.setAttribute("orders", orders);
-            request.getRequestDispatcher("order_history.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.getWriter().write("❌ Failed to load order history: " + e.getMessage());
-        }
+        request.setAttribute("groupedOrders", groupedOrders);
+        request.getRequestDispatcher("order_history.jsp").forward(request, response);
     }
 }
-
