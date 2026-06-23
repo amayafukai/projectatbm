@@ -1,38 +1,30 @@
 package com.ecommerce.servlet;
 
-import com.ecommerce.dao.ProductDAO;
-import com.ecommerce.model.CartItem;
-import com.ecommerce.model.Product;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import com.ecommerce.model.Product;
+import com.ecommerce.dao.ProductDAO;
 
 @WebServlet("/add-to-cart")
 public class AddToCartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String idParam = request.getParameter("id");
-        String qtyParam = request.getParameter("quantity");
 
+        // ✅ Step 1: Get product ID from request
+        String idParam = request.getParameter("id");
         if (idParam == null || idParam.isEmpty()) {
             response.sendRedirect("index.jsp");
             return;
         }
 
         int id = Integer.parseInt(idParam);
-        int quantity = 1;
-        if (qtyParam != null && !qtyParam.isEmpty()) {
-            try {
-                quantity = Integer.parseInt(qtyParam);
-                if (quantity < 1) quantity = 1;
-            } catch (NumberFormatException e) {}
-        }
-
         ProductDAO dao = new ProductDAO();
         Product product = null;
+
         try {
             product = dao.getProductById(id);
         } catch (Exception e) {
@@ -42,24 +34,32 @@ public class AddToCartServlet extends HttpServlet {
         }
 
         if (product != null) {
+            // ✅ Step 2: Get or create the session cart
             HttpSession session = request.getSession();
-            List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-            if (cart == null) cart = new ArrayList<>();
+            List<Product> cart = (List<Product>) session.getAttribute("cart");
 
-            // Cập nhật số lượng nếu sản phẩm đã có trong giỏ
-            boolean found = false;
-            for (CartItem item : cart) {
-                if (item.getProduct().getId() == id) {
-                    item.setQuantity(item.getQuantity() + quantity);
-                    found = true;
+            if (cart == null) {
+                cart = new ArrayList<>();
+            }
+
+            // ✅ Step 4: Prevent duplicate products
+            boolean alreadyInCart = false;
+            for (Product p : cart) {
+                if (p.getId() == product.getId()) {
+                    alreadyInCart = true;
                     break;
                 }
             }
-            if (!found) {
-                cart.add(new CartItem(product, quantity));
+
+            if (!alreadyInCart) {
+                cart.add(product); // ✅ Add only if not already in cart
             }
-            session.setAttribute("cart", cart);
+
+            session.setAttribute("cart", cart); // ✅ Always update session
         }
+
+        // ✅ Step 5: Redirect to cart page
         response.sendRedirect("cart.jsp");
     }
 }
+

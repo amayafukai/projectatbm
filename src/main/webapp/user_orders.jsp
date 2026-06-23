@@ -33,7 +33,7 @@
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th>#</th>
+                    <th>Mã đơn</th>          <!-- ✅ Thay # thành Mã đơn -->
                     <th>Sản phẩm</th>
                     <th>Giá</th>
                     <th>Số lượng</th>
@@ -46,7 +46,7 @@
                     boolean verified = "VERIFIED".equals(o.getVerifyStatus());
                 %>
                 <tr>
-                    <td><%= o.getId() %></td>
+                    <td><%= o.getOrderGroupId() %></td>   <!-- ✅ Hiển thị order_group_id -->
                     <td><%= o.getProductName() %></td>
                     <td>₹<%= o.getPrice() %></td>
                     <td><%= o.getQuantity() %></td>

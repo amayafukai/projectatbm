@@ -2,7 +2,6 @@ package com.ecommerce.servlet;
 
 import com.ecommerce.dao.OrderDAO;
 import com.ecommerce.dao.UserKeyDAO;
-import com.ecommerce.model.CartItem;
 import com.ecommerce.model.Product;
 import com.ecommerce.model.User;
 import com.ecommerce.model.UserKey;
@@ -34,46 +33,44 @@ public class PrepareOrderServlet extends HttpServlet {
         String address = request.getParameter("address");
         String promotion = request.getParameter("promotion");
 
-        // Lấy giỏ hàng dưới dạng List<CartItem>
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        List<Product> cart = (List<Product>) session.getAttribute("cart");
         if (cart == null || cart.isEmpty()) {
             response.getWriter().println("Giỏ hàng trống!");
             return;
         }
 
-        // Lấy public key đang hoạt động
+        // ---- Lấy public key đang ACTIVE của user ----
         UserKeyDAO keyDAO = new UserKeyDAO();
         UserKey activeKey = keyDAO.getActiveKey(userId);
         if (activeKey == null) {
-            response.getWriter().println("Bạn chưa có public key. Vui lòng tạo khóa trước.");
+            response.getWriter().println("Bạn chưa có public key. Vui lòng tạo khóa trước khi đặt hàng.");
             return;
         }
-        int publicKeyId = activeKey.getId();
+        int publicKeyId = activeKey.getId(); // Lấy ID của key đang dùng
 
-        // Xây dựng dữ liệu bất biến (order_details) BAO GỒM CẢ QUANTITY
+        // Tạo dữ liệu bất biến
         StringBuilder dataBuilder = new StringBuilder();
         dataBuilder.append("customer:").append(customerName).append("|");
         dataBuilder.append("address:").append(address).append("|");
         dataBuilder.append("promotion:").append(promotion != null ? promotion : "none").append("|");
-        for (CartItem item : cart) {
-            Product p = item.getProduct();
+        for (Product p : cart) {
             dataBuilder.append("product:")
-                       .append(p.getId()).append(",")
-                       .append(p.getName()).append(",")
-                       .append(p.getPrice()).append(",")
-                       .append(item.getQuantity()).append("|");  // ✅ thêm quantity
+                    .append(p.getId()).append(",")
+                    .append(p.getName()).append(",")
+                    .append(p.getPrice()).append("|");
         }
-        String orderDetails = dataBuilder.toString();
+        String rawData = dataBuilder.toString();
 
         // Băm SHA-256
         String orderHash = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = md.digest(orderDetails.getBytes("UTF-8"));
+            byte[] hashBytes = md.digest(rawData.getBytes("UTF-8"));
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1)
+                    hexString.append('0');
                 hexString.append(hex);
             }
             orderHash = hexString.toString();
@@ -83,13 +80,10 @@ public class PrepareOrderServlet extends HttpServlet {
             return;
         }
 
-        // Tạo order_group_id
-        int orderGroupId = (int) (System.currentTimeMillis() / 1000);
-
-        // Lưu đơn hàng
+        // Lưu đơn hàng với publicKeyId
         OrderDAO orderDAO = new OrderDAO();
-        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address,
-                                                  orderHash, publicKeyId, orderDetails, orderGroupId);
+        int orderId = orderDAO.createPendingOrder(userId, cart, promotion, customerName, address, orderHash,
+                publicKeyId);
 
         if (orderId == -1) {
             response.getWriter().println("Failed to save order");
