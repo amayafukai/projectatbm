@@ -103,10 +103,14 @@
         <td><%= o.getQuantity() %></td>
         <td>₹<%= o.getPrice() %></td>
         <td><%= o.getOrderDate() %></td>
+       <td>
+    <a href="verify-order-integrity?orderId=<%= o.getId() %>" class="btn btn-sm btn-info">Kiểm tra</a>
+</td>
       </tr>
       <% } %>
     </tbody>
   </table>
+  
 </div>
 </body>
 </html>
