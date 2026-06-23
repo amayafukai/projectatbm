@@ -13,7 +13,7 @@
         <% if (request.getAttribute("message") != null) { %>
             <div class="alert alert-success"><%= request.getAttribute("message") %></div>
             <div class="text-center">
-                <a href="order-history" class="btn btn-primary">Xem lịch sử đơn hàng</a>
+                <a href="user-orders" class="btn btn-primary">Xem lịch sử đơn hàng</a>
                 <a href="index.jsp" class="btn btn-secondary">Tiếp tục mua sắm</a>
             </div>
         <% } else if (request.getAttribute("error") != null) { %>
