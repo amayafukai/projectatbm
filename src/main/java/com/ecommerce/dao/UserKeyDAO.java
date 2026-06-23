@@ -80,5 +80,15 @@ public class UserKeyDAO {
         return null;
     }
     
-    
+    public boolean revokeKey(int keyId) {
+        String sql = "UPDATE user_keys SET status = 'REVOKED', revoked_at = NOW() WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, keyId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
